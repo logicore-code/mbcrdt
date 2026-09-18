@@ -1,0 +1,8 @@
+// Distributed tag store demo. This package depends on the parent
+// `logicore-code/mbcrdt` library; it is a small CLI that simulates a
+// two-replica tag cloud on top of the observed-remove set CRDT.
+import {
+  "logicore-code/mbcrdt",
+}
+
+pkgtype(kind: "executable")

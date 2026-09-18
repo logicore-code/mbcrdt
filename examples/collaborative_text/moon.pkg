@@ -1,0 +1,8 @@
+// Collaborative text demo. This package depends on the parent
+// `logicore-code/mbcrdt` library; it is a small CLI that simulates a
+// two-replica collaborative text editor.
+import {
+  "logicore-code/mbcrdt",
+}
+
+pkgtype(kind: "executable")

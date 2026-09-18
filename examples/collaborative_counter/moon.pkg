@@ -1,0 +1,8 @@
+// Collaborative counter demo. This package depends on the parent
+// `logicore-code/mbcrdt` library; it is a small CLI that simulates a
+// distributed counter across two replicas.
+import {
+  "logicore-code/mbcrdt",
+}
+
+pkgtype(kind: "executable")
