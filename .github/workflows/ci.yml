@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    name: Test on Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v5
+
+      - name: Install MoonBit toolchain
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Cache MoonBit modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.moon
+          key: moonbit-${{ runner.os }}-${{ hashFiles('**/moon.mod') }}
+          restore-keys: |
+            moonbit-${{ runner.os }}-
+
+      - name: Update package index
+        run: moon update
+
+      - name: moon fmt --check
+        run: moon fmt --check
+
+      - name: moon check
+        run: moon check
+
+      - name: moon info
+        run: moon info
+
+      - name: moon test
+        run: moon test
+
+      - name: Run examples smoke test
+        run: |
+          moon run examples/collaborative_counter
+          moon run examples/distributed_tags
+          moon run examples/collaborative_text
