@@ -39,7 +39,7 @@ test "bench_rga_append_loop" {
   let alice = Actor::make("alice")
   let mut r = RGA::new()
   for i in 0..<200 {
-    let c = Int::unsafe_to_char(65 + (i % 26))
+    let c = Int::unsafe_to_char(65 + i % 26)
     r = RGA::append(r, c, alice)
   }
   assert_eq(r.length(), 200)

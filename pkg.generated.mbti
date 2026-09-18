@@ -1,0 +1,186 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "logicore-code/mbcrdt"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn root_dot() -> Dot
+
+// Errors
+pub suberror CounterError {
+  NegativeGrowOnly
+  NegativeIncrement
+  NegativeDecrement
+}
+pub fn CounterError::describe(Self) -> String
+
+pub suberror IndexError
+
+pub suberror SetError {
+  TombstoneOverlap
+}
+
+// Types and methods
+pub struct Actor(String) derive(Eq, Hash, @debug.Debug)
+pub fn Actor::id(Self) -> String
+pub fn Actor::make(String) -> Self
+
+pub struct CausalContext {
+  map : Map[String, Int]
+} derive(Eq, @debug.Debug)
+pub fn CausalContext::concurrent(Self, Self) -> Bool
+pub fn CausalContext::dominates(Self, Self) -> Bool
+pub fn CausalContext::equal(Self, Self) -> Bool
+pub fn CausalContext::join(Self, Self) -> Self
+pub fn CausalContext::meet(Self, Self) -> Self
+pub fn CausalContext::new() -> Self
+pub fn CausalContext::next(Self, Actor) -> (Self, Dot)
+pub fn CausalContext::observe(Self, Dot) -> Self
+pub fn CausalContext::observe_all(Self, Iter[Dot]) -> Self
+pub fn CausalContext::to_map(Self) -> Map[String, Int]
+
+pub struct Dot {
+  actor : String
+  counter : Int
+} derive(Eq, Hash, @debug.Debug)
+pub fn Dot::compare(Self, Self) -> Int
+pub fn Dot::counter(Self) -> Int
+pub fn Dot::equal(Self, Self) -> Bool
+pub fn Dot::from_actor(Actor, Int) -> Self
+pub fn Dot::id(Self) -> String
+pub fn Dot::less(Self, Self) -> Bool
+pub fn Dot::new(String, Int) -> Self
+
+pub struct GCounter {
+  counts : Map[String, Int]
+} derive(Eq, @debug.Debug)
+pub fn GCounter::contributions(Self) -> Map[String, Int]
+pub fn GCounter::equal(Self, Self) -> Bool
+pub fn GCounter::inc(Self, Actor, delta? : Int) -> Self raise CounterError
+pub fn GCounter::merge(Self, Self) -> Self
+pub fn GCounter::new() -> Self
+pub fn GCounter::value(Self) -> Int
+
+pub struct GSet[T] {
+  elems : Map[T, Unit]
+}
+pub fn[T : Eq + Hash] GSet::add(Self[T], T) -> Self[T]
+pub fn[T : Eq + Hash] GSet::contains(Self[T], T) -> Bool
+pub fn[T : Eq + Hash] GSet::equal(Self[T], Self[T]) -> Bool
+pub fn[T : Eq + Hash] GSet::merge(Self[T], Self[T]) -> Self[T]
+pub fn[T : Eq + Hash] GSet::new() -> Self[T]
+pub fn[T : Eq + Hash] GSet::of(ArrayView[T]) -> Self[T]
+pub fn[T] GSet::size(Self[T]) -> Int
+pub fn[T] GSet::to_array(Self[T]) -> Array[T]
+
+pub struct LWWMap[V] {
+  entries : Map[String, LWWMapEntry[V]]
+  next_counter : Map[String, Int]
+}
+pub fn[V] LWWMap::contains(Self[V], String) -> Bool
+pub fn[V] LWWMap::delete(Self[V], String, Actor) -> Self[V]
+pub fn[V : Eq] LWWMap::equal(Self[V], Self[V]) -> Bool
+pub fn[V] LWWMap::get(Self[V], String) -> V?
+pub fn[V] LWWMap::merge(Self[V], Self[V]) -> Self[V]
+pub fn[V] LWWMap::new() -> Self[V]
+pub fn[V] LWWMap::of(Array[(String, V)], Actor) -> Self[V]
+pub fn[V] LWWMap::set(Self[V], String, V, Actor) -> Self[V]
+pub fn[V] LWWMap::size(Self[V]) -> Int
+pub fn[V] LWWMap::to_array(Self[V]) -> Array[(String, V)]
+
+pub enum LWWMapEntry[V] {
+  Live(V, LWWTime)
+  Tombstone(LWWTime)
+}
+pub fn[V] LWWMapEntry::is_tombstone(Self[V]) -> Bool
+pub fn[V] LWWMapEntry::time(Self[V]) -> LWWTime
+
+pub struct LWWRegister[T] {
+  value : T
+  timestamp : LWWTime
+  next_counter : Int
+} derive(@debug.Debug)
+pub fn[T : Eq] LWWRegister::equal(Self[T], Self[T]) -> Bool
+pub fn[T] LWWRegister::merge(Self[T], Self[T]) -> Self[T]
+pub fn[T] LWWRegister::new(T, Actor) -> Self[T]
+pub fn[T] LWWRegister::timestamp(Self[T]) -> LWWTime
+pub fn[T] LWWRegister::value(Self[T]) -> T
+pub fn[T] LWWRegister::write(Self[T], T) -> Self[T]
+
+pub struct LWWTime {
+  actor : String
+  counter : Int
+} derive(Eq, Hash, @debug.Debug)
+pub fn LWWTime::compare(Self, Self) -> Int
+pub fn LWWTime::from_actor(Actor, Int) -> Self
+pub fn LWWTime::greater(Self, Self) -> Bool
+
+pub struct ORSet[T] {
+  adds : Map[T, Map[Dot, Unit]]
+  retired : CausalContext
+  clock : CausalContext
+} derive(@debug.Debug)
+pub fn[T : Eq + Hash] ORSet::add(Self[T], T, Actor) -> Self[T]
+pub fn[T : Eq + Hash] ORSet::contains(Self[T], T) -> Bool
+pub fn[T : Eq + Hash] ORSet::equal(Self[T], Self[T]) -> Bool
+pub fn[T : Eq + Hash] ORSet::merge(Self[T], Self[T]) -> Self[T]
+pub fn[T : Eq + Hash] ORSet::new() -> Self[T]
+pub fn[T : Eq + Hash] ORSet::of(ArrayView[T], Actor) -> Self[T]
+pub fn[T : Eq + Hash] ORSet::remove(Self[T], T) -> Self[T]
+pub fn[T : Eq + Hash] ORSet::size(Self[T]) -> Int
+pub fn[T : Eq + Hash] ORSet::to_array(Self[T]) -> Array[T]
+
+pub struct PNCounter {
+  p : GCounter
+  n : GCounter
+} derive(Eq, @debug.Debug)
+pub fn PNCounter::contributions(Self) -> (Map[String, Int], Map[String, Int])
+pub fn PNCounter::dec(Self, Actor, delta? : Int) -> Self raise CounterError
+pub fn PNCounter::equal(Self, Self) -> Bool
+pub fn PNCounter::inc(Self, Actor, delta? : Int) -> Self raise CounterError
+pub fn PNCounter::merge(Self, Self) -> Self
+pub fn PNCounter::new() -> Self
+pub fn PNCounter::value(Self) -> Int
+
+pub struct RGA {
+  nodes : Map[String, RGAChar]
+  clock : CausalContext
+}
+pub fn RGA::append(Self, Char, Actor) -> Self
+pub fn RGA::delete_at(Self, Int) -> Self raise IndexError
+pub fn RGA::insert_after(Self, Dot, Char, Actor) -> Self
+pub fn RGA::insert_at(Self, Int, Char, Actor) -> Self
+pub fn RGA::is_empty(Self) -> Bool
+pub fn RGA::length(Self) -> Int
+pub fn RGA::merge(Self, Self) -> Self
+pub fn RGA::new() -> Self
+pub fn RGA::prepend(Self, Char, Actor) -> Self
+pub fn RGA::to_array(Self) -> Array[Char]
+pub fn RGA::to_string(Self) -> String
+
+pub struct RGAChar {
+  tag : Dot
+  value : Char
+  anchor : Dot
+  deleted : Bool
+}
+
+pub struct TwoPSet[T] {
+  adds : Map[T, Unit]
+  removes : Map[T, Unit]
+}
+pub fn[T : Eq + Hash] TwoPSet::add(Self[T], T) -> Self[T]
+pub fn[T : Eq + Hash] TwoPSet::contains(Self[T], T) -> Bool
+pub fn[T : Eq + Hash] TwoPSet::equal(Self[T], Self[T]) -> Bool
+pub fn[T : Eq + Hash] TwoPSet::merge(Self[T], Self[T]) -> Self[T]
+pub fn[T : Eq + Hash] TwoPSet::new() -> Self[T]
+pub fn[T : Eq + Hash] TwoPSet::of(ArrayView[T]) -> Self[T]
+pub fn[T : Eq + Hash] TwoPSet::remove(Self[T], T) -> Self[T] raise SetError
+pub fn[T : Eq + Hash] TwoPSet::size(Self[T]) -> Int
+pub fn[T : Eq + Hash] TwoPSet::to_array(Self[T]) -> Array[T]
+
+// Type aliases
+
+// Traits
